@@ -27,7 +27,8 @@ def get_pos():
 
 
 def get_kad():
-    patt = re.compile("^[0-3][\d][/][0-1][0-2][/][2][0][1-2][\d]$")
+    # Define expected input for kad. This would need updating in 2030
+    patt = re.compile("^[0-3][\d][/][0-1][\d][/][2][0][1-2][\d]$")
     while True:
         kad = input("Enter KAD (in format DD/MM/YYYY): ")
         match = patt.match(kad)
@@ -58,7 +59,7 @@ def get_centre():
 
 
 def get_candidates():
-    patt = re.compile("^(?P<min_cand>[1-9][0-9]*)[\s]+(?P<max_cand>[1-9][0-9]*)$")
+    patt = re.compile("^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")
     while True:
         candidates = input("Enter the first and last candidate number (for example '1 10' for 10 candidates): ")
         candidates = candidates.strip()
@@ -85,7 +86,7 @@ def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_details_to_df(df, kad, sitting, centre):
+def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
     df = df.copy()
     df['Assessment Event Date'] = kad
     df['Assessment Event Sitting'] = sitting
@@ -181,16 +182,6 @@ def add_candidates_to_df(candidates: range, df: pd.DataFrame, candidate_df: pd.D
     return candidate_df
 
 
-def save_df_to_csv(df: pd.DataFrame, kad: str, pos: str, centre: str, sitting: str):
-    # Drop Max Marks column for output csv
-    df = df.drop(columns=['Max_Mark'])
-    df['Candidate No'] = df['Candidate No'].apply(lambda x: f"{x:>04}")
-    # Remove invalid filepath symbols
-    file_kad = kad.replace("/", "")
-    # Save df to CSV with filename using session details
-    df.to_csv(str(FILEPATH) + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
-
-
 def get_qpvs_for_candidates(pos_df):
     # create an empty dataframe to store data for all candidates
     candidate_df = pd.DataFrame(columns=HEADER)
@@ -208,24 +199,37 @@ def get_qpvs_for_candidates(pos_df):
     return candidate_df
 
 
+def save_df_to_csv(df: pd.DataFrame):
+    # Drop Max Marks column for output csv
+    df = df.drop(columns=['Max_Mark'])
+    kad, pos, centre, sitting = df['Assessment Event Date'].unique(), df['Programme of Study Code'].unique(),\
+        df['Centre No'].unique(), df['Assessment Event Sitting'].unique()
+    
+    kad, pos, centre, sitting = str(kad[0]), pos[0], centre[0], sitting[0]
+
+    df['Candidate No'] = df['Candidate No'].apply(lambda x: f"{x:>04}")
+    # Remove invalid filepath symbols
+    file_kad = kad.replace("/", "")
+    # Save df to CSV with filename using session details
+    df.to_csv(str(FILEPATH) + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
+
+
 def main():
-    system('cls')
-    print("Marks file creation program")
-
-    # Take session details from user
-    pos = get_pos()
-    kad = get_kad()
-    sitting = get_sitting()
-    centre = get_centre()
-
-    # Slice df and add the provided details
-    pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == pos].copy()
-    pos_df = add_details_to_df(pos_df, kad, sitting, centre)
-
-    candidate_df = get_qpvs_for_candidates(pos_df=pos_df)
-
-    save_df_to_csv(candidate_df, kad, pos, centre, sitting)
-
+    choice = "y"
+    while choice == "y":
+        system('cls')
+        print("Marks file creation program")
+        # Take session details from user
+        pos = get_pos()
+        kad = get_kad()
+        sitting = get_sitting()
+        centre = get_centre()
+        # Slice df and add the provided details
+        pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == pos].copy()
+        pos_df = add_details_to_df(pos_df, kad, sitting, centre)
+        candidate_df = get_qpvs_for_candidates(pos_df=pos_df)
+        save_df_to_csv(candidate_df)
+        choice = input("Generate another marks file? y/n:")
 
 
 if __name__ == "__main__":
