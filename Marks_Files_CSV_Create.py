@@ -27,11 +27,13 @@ def get_pos():
 
 
 def get_kad():
-    kad = input("Enter KAD (in format DD/MM/YYYY): ")
-    if (len(kad) != 10) or (kad[2] != "/") or (kad[5] != "/"):
-        print("Invalid date, please try again")
-        get_kad()
-    else:
+    patt = re.compile("^[0-3][\d][/][0-1][0-2][/][2][0][1-2][\d]$")
+    while True:
+        kad = input("Enter KAD (in format DD/MM/YYYY): ")
+        match = patt.match(kad)
+        if not match:
+            print("Invalid KAD, please try again")
+            continue
         return kad
 
 
