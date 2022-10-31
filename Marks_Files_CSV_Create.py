@@ -129,11 +129,8 @@ def mark_scheme():
 
 
 def validate_mark(mark, max_mark):
-    if mark <= max_mark & mark >= 0:
+    if mark <= max_mark and mark >= 0:
         return True
-    else:
-        print("Mark given is outside valid range, please try again")
-        return False
 
 
 def assign_marks(df: pd.DataFrame, option: Literal[1, 2, 3, 4]) -> pd.DataFrame:
