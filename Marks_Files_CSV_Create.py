@@ -158,11 +158,11 @@ def assign_marks(df: pd.DataFrame, option: Literal[1, 2, 3, 4]) -> pd.DataFrame:
         for idx, row in df.iterrows():
             # Get the maximum possible mark for that row
             max_mark = row['Max_Mark']
-            valid_mark = False
-            while not valid_mark:
+            #valid_mark = False
+            #while not valid_mark:
                 # Get mark from user input
-                mark = int(input(f"Enter mark for {row['Module Code']} {row['Candidate No']} (max: {max_mark}): "))
-                valid_mark = validate_mark(mark, max_mark)
+            mark = int(input(f"Enter mark for {row['Module Code']} {row['Candidate No']} (max: {max_mark}): "))
+                #valid_mark = validate_mark(mark, max_mark)
             # Add entered mark to list
             marks.append(int(mark))
         # Add marks from list to candidate marks column
@@ -212,6 +212,12 @@ def save_df_to_csv(df: pd.DataFrame):
     file_kad = kad.replace("/", "")
     # Save df to CSV with filename using session details
     df.to_csv(str(FILEPATH) + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
+
+
+def input_choice():
+    return input("How would you like to enter data? \n\
+        1. Enter in format (POS) (KAD) (Sitting) (Centre)\n\
+        2. Enter separately\n")
 
 
 def main():
