@@ -114,27 +114,18 @@ def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
 
 
 def mark_scheme():
-    system("cls")
-    choice = input("Choose an option from the following list:\n\
-        1: Use full marks for all candidates\n\
-        2: Use random marks for all candidates\n\
-        3: Use specific marks for each module but shared by candidates\n\
-        4: Choose individual marks for each candidate and module\n")
-    if choice == '1':
-        system('cls')
-        return 1
-    elif choice == '2':
-        system('cls')
-        return 2
-    elif choice == '3':
-        system('cls')
-        return 3
-    elif choice == '4':
-        system('cls')
-        return 4
-    else:
-        system('cls')
-        mark_scheme()
+    option_patt = re.compile("^[1-4]{1}")
+    while True:
+        choice = input("Choose an option from the following list:\n\
+            1: Use full marks for all candidates\n\
+            2: Use random marks for all candidates\n\
+            3: Use specific marks for each module but shared by candidates\n\
+            4: Choose individual marks for each candidate and module\n")
+        match = option_patt.match(choice)
+        if not match:
+            print("Invalid option entered, please try again")
+            continue
+        return int(choice)
 
 
 def validate_mark(mark, max_mark):
