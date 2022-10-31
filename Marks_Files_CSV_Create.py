@@ -133,7 +133,7 @@ def validate_mark(mark, max_mark):
         return True
 
 
-def assign_marks(df: pd.DataFrame, option: Literal[1, 2, 3, 4]) -> pd.DataFrame:
+def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
     """_summary_
 
     Args:
@@ -152,28 +152,31 @@ def assign_marks(df: pd.DataFrame, option: Literal[1, 2, 3, 4]) -> pd.DataFrame:
         df['Candidate Mark'] = df['Max_Mark'].apply(lambda x: randint(0, x))
     elif option == 3:
         # Get each distinct module code
+        print(df['Module Code'].unique())
         for module in df['Module Code'].unique():
             # Get the maximum possible mark for that module
             max_mark = df[df['Module Code'] == module]['Max_Mark'].to_list()[0]
-            # Get user to enter mark for module
-            mark = input(f"Enter mark for {module} (max: {max_mark}): ")
-            # Put entered mark into each row
-            df.loc[df['Module Code'] == module, 'Candidate Mark'] = mark
+            while True:
+                # Get user to enter mark for module
+                mark = int(input(f"Enter mark for {module} (max: {max_mark}): "))
+                valid_mark = validate_mark(mark, max_mark)
+                if not valid_mark:
+                    print("Mark given is outside valid range, please try again")
+                    continue
+                # Put entered mark into each row
+                df.loc[df['Module Code'] == module, 'Candidate Mark'] = mark
     elif option == 4:
-        # Create list to store marks for each candidate
-        marks = []
         for idx, row in df.iterrows():
             # Get the maximum possible mark for that row
             max_mark = row['Max_Mark']
-            #valid_mark = False
-            #while not valid_mark:
+            while True:
                 # Get mark from user input
-            mark = int(input(f"Enter mark for {row['Module Code']} {row['Candidate No']} (max: {max_mark}): "))
-                #valid_mark = validate_mark(mark, max_mark)
-            # Add entered mark to list
-            marks.append(int(mark))
-        # Add marks from list to candidate marks column
-        df['Candidate Mark'] = marks
+                mark = int(input(f"Enter mark for {row['Module Code']} {row['Candidate No']} (max: {max_mark}): "))
+                valid_mark = validate_mark(mark, max_mark)
+                if not valid_mark:
+                    print("Mark given is outside valid range, please try again")
+                    continue
+                df.loc[idx, 'Candidate Mark'] = mark
     return df
 
 
