@@ -1,3 +1,4 @@
+from ast import Break
 from os import system
 from pathlib import Path
 from random import randint
@@ -129,8 +130,10 @@ def mark_scheme():
 
 
 def validate_mark(mark, max_mark):
-    if mark <= max_mark and mark >= 0:
+    if (mark <= max_mark and mark >= 0):
         return True
+    else:
+        return False
 
 
 def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
@@ -171,12 +174,13 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
             max_mark = row['Max_Mark']
             while True:
                 # Get mark from user input
-                mark = int(input(f"Enter mark for {row['Module Code']} {row['Candidate No']} (max: {max_mark}): "))
+                mark = int(input(f"Enter mark for {row['Module Code']} {row['Measure Def Code']} {row['Candidate No']} (max: {max_mark}): "))
                 valid_mark = validate_mark(mark, max_mark)
                 if not valid_mark:
                     print("Mark given is outside valid range, please try again")
                     continue
                 df.loc[idx, 'Candidate Mark'] = mark
+                break
     return df
 
 
