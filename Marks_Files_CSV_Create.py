@@ -17,12 +17,17 @@ HEADER = ['Purchase Order Number', 'Item Number', 'Centre No', 'Centre No (SAP)'
           'Measure Def Code', 'Measure Def Desc', 'Measure Def Level', 'Candidate Mark', 'Examiner Id (UCLES ID)', 'Delivery Method']
 
 
-def get_pos():
-    pos = input("Enter POS (in format D###): ").upper()
-    if len(pos) != 4:
-        print("Invalid POS, please try again")
-        get_pos()
-    else:
+def get_pos() -> str:
+    """Function to take and validate POS input
+
+    Returns:
+        str: Validated POS
+    """
+    while True:
+        pos = input("Enter POS (in format D###): ").upper()
+        if pos not in POS_CODES['Programme of Study Code'].unique():
+            print("Invalid POS, please try again")
+            continue
         return pos
 
 
