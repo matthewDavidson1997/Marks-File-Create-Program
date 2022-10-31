@@ -31,7 +31,12 @@ def get_pos() -> str:
         return pos
 
 
-def get_kad():
+def get_kad() -> str:
+    """Function to take and validate KAD input
+
+    Returns:
+        str: Validated KAD
+    """
     # Define expected input for kad. This would need updating in 2030
     patt = re.compile("^[0-3][\d][/][0-1][\d][/][2][0][1-2][\d]$")
     while True:
