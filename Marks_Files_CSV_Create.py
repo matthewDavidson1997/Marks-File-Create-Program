@@ -62,12 +62,16 @@ def get_sitting() -> str:
         return sitting
 
 
-def get_centre():
-    pat1 = re.compile("^[\d]{5}$")
-    pat2 = re.compile("^[A-Z]{2}[\d]{3}$")
+def get_centre() -> str:
+    """Function to take and validate centre input
+
+    Returns:
+        str: validated centre
+    """
+    centre_patts = [re.compile("^[\d]{5}$"), re.compile("^[A-Z]{2}[\d]{3}$")]
     while True:
         centre = input("Enter centre number: ").upper()
-        if not any([pat.match(centre) for pat in [pat1, pat2]]):
+        if not any([pat.match(centre) for pat in centre_patts]):
             print("Invalid centre, please try again")
             continue
         return centre
