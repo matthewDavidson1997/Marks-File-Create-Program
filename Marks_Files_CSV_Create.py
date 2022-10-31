@@ -114,7 +114,7 @@ def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
 
 
 def mark_scheme():
-    option_patt = re.compile("^[1-4]{1}")
+    option_patt = re.compile("^[1-4]$")
     while True:
         choice = input("Choose an option from the following list:\n\
             1: Use full marks for all candidates\n\
