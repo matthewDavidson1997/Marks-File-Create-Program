@@ -48,7 +48,12 @@ def get_kad() -> str:
         return kad
 
 
-def get_sitting():
+def get_sitting() -> str:
+    """Function to take and validate sitting input
+
+    Returns:
+        str: Validated sitting
+    """
     while True:
         sitting = input("Enter sitting (AM, PM, EV): ").upper()
         if sitting not in ["AM", "PM", "EV"]:
