@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from random import randint
-from typing import List
+from typing import List, Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -39,47 +39,66 @@ HEADER = [
     "Delivery Method",
 ]
 
+# A dictionary of (prompt, repeat) pairs, keyed by function name
+MESSAGE_DICT = {
+    "get_pos": (
+        "Enter POS (in format D###): ",
+        "Invalid POS, please try again"
+    ),
+    "get_kad": (
+        "Enter KAD (in format DD/MM/YYYY): ",
+        "Invalid date given, try again"
+    ),
+    "get_sitting": (
+        "Enter sitting (AM, PM, EV): ",
+        "Invalid sitting, please try again"
+    )
+}
+
 
 def get_pos() -> str:
-    """Function to take and validate POS input.
+    """Take and validate POS input.
 
     Returns:
         str: Validated POS
     """
     while True:
-        pos = input("Enter POS (in format D###): ").upper()
+        prompt, repeat = MESSAGE_DICT["get_pos"]
+        pos = input(prompt).upper()
         if pos not in POS_CODES["Programme of Study Code"].unique():
-            print("Invalid POS, please try again")
+            print(repeat)
             continue
         return pos
 
 
 def get_kad() -> str:
-    """Function to take and validate KAD input.
+    """Take and validate KAD input.
 
     Returns:
         str: Validated KAD
     """
     while True:
-        user_input = input("Enter KAD (in format DD/MM/YYYY): ").upper()
+        prompt, repeat = MESSAGE_DICT["get_kad"]
+        user_input = input(prompt).upper()
         try:
             kad = datetime.strptime(user_input, "%d/%m/%Y")
         except ValueError:
-            print("Invalid date given, try again")
+            print(repeat)
             continue
         return datetime.strftime(kad, "%d/%m/%Y")
 
 
 def get_sitting() -> str:
-    """Function to take and validate sitting input.
+    """Take and validate sitting input.
 
     Returns:
         str: Validated sitting
     """
     while True:
-        sitting = input("Enter sitting (AM, PM, EV): ").upper()
+        prompt, repeat = MESSAGE_DICT["get_sitting"]
+        sitting = input(prompt).upper()
         if sitting not in ["AM", "PM", "EV"]:
-            print("Invalid sitting, please try again")
+            print(repeat)
             continue
         return sitting
 
