@@ -263,7 +263,7 @@ def input_choice():
 def main():
     choice = "y"
     while choice == "y":
-        system("cls")
+        os.system("cls" if os.name == "nt" else "clear")
         print("Marks file creation program")
         # Take session details from user
         pos = get_pos()
