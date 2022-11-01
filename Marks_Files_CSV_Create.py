@@ -105,32 +105,30 @@ def validate_match(regex_pattern: List[re.Pattern], match_question: str, error_m
 
 def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    valid_patts = [re.compile(r"^[\d]*$")]
     for module in df['Module Code'].unique():
         match_question = f"Enter QPV for {module}: "
         error_message = "QPVs can only contain numeric digits, please try again"
-        qpv = validate_match(regex_pattern=valid_patts, match_question=match_question, error_message=error_message)
+        qpv = validate_match(regex_pattern=REGEX_PATTERNS['QPV'], match_question=match_question, error_message=error_message)
         for cand in candidates:
             # Put entered mark into each row
             df.loc[(df['Module Code'] == module) & (df['Candidate No'] == cand), 'Module Question Paper Version'] = qpv
     return df
 
 
-def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
+def add_details_to_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df['Assessment Event Date'], df['Assessment Event Sitting'], df['Centre No'] = kad, sitting, centre
+    df['Assessment Event Date'], df['Assessment Event Sitting'], df['Centre No'] = get_kad(), get_sitting(), get_centre()
     return df
 
 
 def mark_scheme() -> int:
-    valid_patts = [re.compile("^[1-4]$")]
     match_question = "Choose an option from the following list:\n\
         1: Use full marks for all candidates\n\
         2: Use random marks for all candidates\n\
         3: Use specific marks for each module but shared by candidates\n\
         4: Choose individual marks for each candidate and module\n"
     error_message = "Invalid option entered, please try again"
-    return int(validate_match(regex_pattern=valid_patts, match_question=match_question, error_message=error_message))
+    return int(validate_match(regex_pattern=REGEX_PATTERNS['Mark Scheme'], match_question=match_question, error_message=error_message))
 
 
 def validate_mark(max_mark: int, input_question: str):
@@ -202,9 +200,8 @@ def add_candidates_to_df(candidates: range, df: pd.DataFrame, candidate_df: pd.D
     return candidate_df
 
 
-def get_qpvs_for_candidates(pos_df):
+def get_qpvs_for_candidates(pos_df, candidate_df):
     # create an empty dataframe to store data for all candidates
-    candidate_df = pd.DataFrame(columns=HEADER)
     choice = "y"
     while choice == "y":
         candidates = get_candidates()
@@ -241,19 +238,16 @@ def input_choice():
 
 
 def main():
+    # Create empty dataframe which will become our output file
+    candidate_df = pd.DataFrame(columns=HEADER)
     choice = "y"
     while choice == "y":
         system('cls')
         print("Marks file creation program")
-        # Take session details from user
-        pos = get_pos()
-        kad = get_kad()
-        sitting = get_sitting()
-        centre = get_centre()
         # Slice df and add the provided details
-        pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == pos].copy()
-        pos_df = add_details_to_df(pos_df, kad, sitting, centre)
-        candidate_df = get_qpvs_for_candidates(pos_df=pos_df)
+        pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == get_pos()].copy()
+        pos_df = add_details_to_df(pos_df)
+        candidate_df = get_qpvs_for_candidates(pos_df=pos_df, candidate_df=candidate_df)
         save_df_to_csv(candidate_df)
         choice = input("Generate another marks file? y/n:")
 
