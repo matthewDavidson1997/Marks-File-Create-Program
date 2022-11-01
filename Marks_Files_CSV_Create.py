@@ -2,6 +2,8 @@ from os import system
 from pathlib import Path
 from random import randint
 import re
+from typing import List
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -36,15 +38,14 @@ def get_kad() -> str:
     Returns:
         str: Validated KAD
     """
-    # Define expected input for kad. This would need updating in 2030
-    patt = re.compile("^[0-3][\d][/][0-1][\d][/][2][0][1-2][\d]$")
     while True:
-        kad = input("Enter KAD (in format DD/MM/YYYY): ")
-        match = patt.match(kad)
-        if not match:
-            print("Invalid KAD, please try again")
+        user_input = input("Enter KAD (in format DD/MM/YYYY): ").upper()
+        try:
+            kad = datetime.strptime(user_input, '%d/%m/%Y')
+        except ValueError:
+            print("Invalid date given, try again")
             continue
-        return kad
+        return datetime.strftime(kad, '%d/%m/%Y')
 
 
 def get_sitting() -> str:
@@ -67,17 +68,14 @@ def get_centre() -> str:
     Returns:
         str: validated centre
     """
-    centre_patts = [re.compile("^[\d]{5}$"), re.compile("^[A-Z]{2}[\d]{3}$")]
-    while True:
-        centre = input("Enter centre number: ").upper()
-        if not any([pat.match(centre) for pat in centre_patts]):
-            print("Invalid centre, please try again")
-            continue
-        return centre
+    valid_patts = [re.compile(r"^[\d]{5}$"), re.compile(r"^[A-Z]{2}[\d]{3}$")]
+    match_question = "Enter centre number: "
+    error_message = "Invalid centre, please try again"
+    return validate_match(regex_pattern=valid_patts, match_question=match_question, error_message=error_message)
 
 
 def get_candidates():
-    patt = re.compile("^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")
+    patt = re.compile(r"^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")
     while True:
         candidates = input("Enter the first and last candidate number (for example '1 10' for 10 candidates): ")
         candidates = candidates.strip()
@@ -93,11 +91,23 @@ def get_candidates():
         return range(min_cand, max_cand + 1)
 
 
+def validate_match(regex_pattern: List[re.Pattern], match_question: str, error_message: str):
+    patts = regex_pattern
+    while True:
+        user_input = input(match_question).upper()
+        if not any([patt.match(user_input) for patt in patts]):
+            print(error_message)
+            continue
+        return user_input
+
+
 def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    valid_patts = [re.compile(r"^[\d]*$")]
     for module in df['Module Code'].unique():
-        # Get user to enter mark for module
-        qpv = input(f"Enter QPV for {module}: ")
+        match_question = f"Enter QPV for {module}: "
+        error_message = "QPVs can only contain numeric digits, please try again"
+        qpv = validate_match(regex_pattern=valid_patts, match_question=match_question, error_message=error_message)
         for cand in candidates:
             # Put entered mark into each row
             df.loc[(df['Module Code'] == module) & (df['Candidate No'] == cand), 'Module Question Paper Version'] = qpv
@@ -106,9 +116,7 @@ def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
 
 def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
     df = df.copy()
-    df['Assessment Event Date'] = kad
-    df['Assessment Event Sitting'] = sitting
-    df['Centre No'] = centre
+    df['Assessment Event Date'], df['Assessment Event Sitting'], df['Centre No'] = kad, sitting, centre
     return df
 
 
@@ -127,8 +135,10 @@ def mark_scheme():
         return int(choice)
 
 
-def validate_mark(mark, max_mark):
-    if (mark <= max_mark and mark >= 0):
+def validate_mark(mark: str, max_mark: int) -> bool:
+    if not mark:
+        return True
+    elif mark.isnumeric() and int(mark) <= max_mark and int(mark) >= 0:
         return True
     else:
         return False
@@ -159,7 +169,7 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
             max_mark = df[df['Module Code'] == module]['Max_Mark'].to_list()[0]
             while True:
                 # Get user to enter mark for module
-                mark = int(input(f"Enter mark for {module} (max: {max_mark}): "))
+                mark = input(f"Enter mark for {module} (max: {max_mark}): ")
                 valid_mark = validate_mark(mark, max_mark)
                 if not valid_mark:
                     print("Mark given is outside valid range, please try again")
@@ -172,7 +182,7 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
             max_mark = row['Max_Mark']
             while True:
                 # Get mark from user input
-                mark = int(input(f"Enter mark for {row['Module Code']} {row['Measure Def Code']} {row['Candidate No']} (max: {max_mark}): "))
+                mark = input(f"Enter mark for {row['Module Code']} {row['Measure Def Code']} {row['Candidate No']} (max: {max_mark}): ")
                 valid_mark = validate_mark(mark, max_mark)
                 if not valid_mark:
                     print("Mark given is outside valid range, please try again")
