@@ -1,20 +1,40 @@
+"""Functionality for automating CSV marks file generation."""
+
+
+import re
 from os import system
 from pathlib import Path
 from random import randint
-import re
 from typing import Literal
 
 import numpy as np
 import pandas as pd
 
+FILEPATH = Path(r"Z:\Personal\Marks File Create Program\Marks_Files")
+POS_CODES = pd.read_csv(r"Z:\Personal\Marks File Create Program\POS_Codes.csv")
 
-FILEPATH = Path('Z:\Personal\Marks File Create Program\Marks_Files')
-POS_CODES = pd.read_csv('Z:\Personal\Marks File Create Program\POS_Codes.csv')
-
-HEADER = ['Purchase Order Number', 'Item Number', 'Centre No', 'Centre No (SAP)', 'Candidate No',
-          'Candidate No (SAP)', 'ATA Candidate Number', 'Programme of Study Code', 'Module Code', 'Module Booking GUID',
-          'Assessment Event Date', 'Assessment Event Sitting', 'Module Question Paper Version', 'Candidate Status',
-          'Measure Def Code', 'Measure Def Desc', 'Measure Def Level', 'Candidate Mark', 'Examiner Id (UCLES ID)', 'Delivery Method']
+HEADER = [
+    "Purchase Order Number",
+    "Item Number",
+    "Centre No",
+    "Centre No (SAP)",
+    "Candidate No",
+    "Candidate No (SAP)",
+    "ATA Candidate Number",
+    "Programme of Study Code",
+    "Module Code",
+    "Module Booking GUID",
+    "Assessment Event Date",
+    "Assessment Event Sitting",
+    "Module Question Paper Version",
+    "Candidate Status",
+    "Measure Def Code",
+    "Measure Def Desc",
+    "Measure Def Level",
+    "Candidate Mark",
+    "Examiner Id (UCLES ID)",
+    "Delivery Method",
+]
 
 
 def get_pos():
@@ -28,7 +48,7 @@ def get_pos():
 
 def get_kad():
     # Define expected input for kad. This would need updating in 2030
-    patt = re.compile("^[0-3][\d][/][0-1][\d][/][2][0][1-2][\d]$")
+    patt = re.compile(r"^[0-3][\d]/[0-1][\d]/20[1-2][\d]$")
     while True:
         kad = input("Enter KAD (in format DD/MM/YYYY): ")
         match = patt.match(kad)
@@ -59,9 +79,12 @@ def get_centre():
 
 
 def get_candidates():
-    patt = re.compile("^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")
+    patt = re.compile(r"^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")
     while True:
-        candidates = input("Enter the first and last candidate number (for example '1 10' for 10 candidates): ")
+        candidates = input(
+            "Enter the first and last candidate number"
+            "(for example '1 10' for 10 candidates): "
+        )
         candidates = candidates.strip()
         match = patt.match(candidates)
         if not match:
@@ -77,44 +100,49 @@ def get_candidates():
 
 def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    for module in df['Module Code'].unique():
+    for module in df["Module Code"].unique():
         # Get user to enter mark for module
         qpv = input(f"Enter QPV for {module}: ")
         for cand in candidates:
             # Put entered mark into each row
-            df.loc[(df['Module Code'] == module) & (df['Candidate No'] == cand), 'Module Question Paper Version'] = qpv
+            df.loc[
+                (df["Module Code"] == module) & (df["Candidate No"] == cand),
+                "Module Question Paper Version",
+            ] = qpv
     return df
 
 
 def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
     df = df.copy()
-    df['Assessment Event Date'] = kad
-    df['Assessment Event Sitting'] = sitting
-    df['Centre No'] = centre
+    df["Assessment Event Date"] = kad
+    df["Assessment Event Sitting"] = sitting
+    df["Centre No"] = centre
     return df
 
 
 def mark_scheme():
     system("cls")
-    choice = input("Choose an option from the following list:\n\
+    choice = input(
+        "Choose an option from the following list:\n\
         1: Use full marks for all candidates\n\
         2: Use random marks for all candidates\n\
         3: Use specific marks for each module but shared by candidates\n\
-        4: Choose individual marks for each candidate and module\n")
-    if choice == '1':
-        system('cls')
+        4: Choose individual marks for each candidate and module\n"
+    )
+    if choice == "1":
+        system("cls")
         return 1
-    elif choice == '2':
-        system('cls')
+    elif choice == "2":
+        system("cls")
         return 2
-    elif choice == '3':
-        system('cls')
+    elif choice == "3":
+        system("cls")
         return 3
-    elif choice == '4':
-        system('cls')
+    elif choice == "4":
+        system("cls")
         return 4
     else:
-        system('cls')
+        system("cls")
         mark_scheme()
 
 
@@ -139,46 +167,51 @@ def assign_marks(df: pd.DataFrame, option: Literal[1, 2, 3, 4]) -> pd.DataFrame:
     df = df.copy()
     if option == 1:
         # Set candidate mark as the maximum mark
-        df['Candidate Mark'] = df['Max_Mark']
+        df["Candidate Mark"] = df["Max_Mark"]
     elif option == 2:
         # Enter a random mark for each row within range of max mark
-        df['Candidate Mark'] = df['Max_Mark'].apply(lambda x: randint(0, x))
+        df["Candidate Mark"] = df["Max_Mark"].apply(lambda x: randint(0, x))
     elif option == 3:
         # Get each distinct module code
-        for module in df['Module Code'].unique():
+        for module in df["Module Code"].unique():
             # Get the maximum possible mark for that module
-            max_mark = df[df['Module Code'] == module]['Max_Mark'].to_list()[0]
+            max_mark = df[df["Module Code"] == module]["Max_Mark"].to_list()[0]
             # Get user to enter mark for module
             mark = input(f"Enter mark for {module} (max: {max_mark}): ")
             # Put entered mark into each row
-            df.loc[df['Module Code'] == module, 'Candidate Mark'] = mark
+            df.loc[df["Module Code"] == module, "Candidate Mark"] = mark
     elif option == 4:
         # Create list to store marks for each candidate
         marks = []
-        for idx, row in df.iterrows():
+        for _, row in df.iterrows():
             # Get the maximum possible mark for that row
-            max_mark = row['Max_Mark']
+            max_mark = row["Max_Mark"]
             valid_mark = False
             while not valid_mark:
                 # Get mark from user input
-                mark = int(input(f"Enter mark for {row['Module Code']} {row['Candidate No']} (max: {max_mark}): "))
-                valid_mark = validate_mark(mark, max_mark)
+                mark = input(
+                    f"Enter mark for {row['Module Code']} {row['Candidate No']} \
+                        (max: {max_mark}): "
+                )
+                valid_mark = validate_mark(int(mark), max_mark)
             # Add entered mark to list
             marks.append(int(mark))
         # Add marks from list to candidate marks column
-        df['Candidate Mark'] = marks
+        df["Candidate Mark"] = marks
     return df
 
 
-def add_candidates_to_df(candidates: range, df: pd.DataFrame, candidate_df: pd.DataFrame) -> pd.DataFrame:
+def add_candidates_to_df(
+    candidates: range, df: pd.DataFrame, candidate_df: pd.DataFrame
+) -> pd.DataFrame:
     # For each candidate in the range of candidates given add candidate number
     # to a new column in dataframe
     for cand in candidates:
         temp_df = df.copy()
-        temp_df['Candidate No'] = cand
+        temp_df["Candidate No"] = cand
         # Concatenate the dataframe for each candidate
         candidate_df = pd.concat([candidate_df, temp_df], ignore_index=True)
-    candidate_df['Max_Mark'] = candidate_df['Max_Mark'].astype(np.uint8)
+    candidate_df["Max_Mark"] = candidate_df["Max_Mark"].astype(np.uint8)
     return candidate_df
 
 
@@ -188,7 +221,9 @@ def get_qpvs_for_candidates(pos_df):
     choice = "y"
     while choice == "y":
         candidates = get_candidates()
-        candidate_df = add_candidates_to_df(candidates=candidates, df=pos_df, candidate_df=candidate_df)
+        candidate_df = add_candidates_to_df(
+            candidates=candidates, df=pos_df, candidate_df=candidate_df
+        )
         # Take QPV from user and add to dataframe
         candidate_df = get_qpvs(candidates, candidate_df)
         choice = input("Would you like to add another candidate range? y/n:")
@@ -201,23 +236,30 @@ def get_qpvs_for_candidates(pos_df):
 
 def save_df_to_csv(df: pd.DataFrame):
     # Drop Max Marks column for output csv
-    df = df.drop(columns=['Max_Mark'])
-    kad, pos, centre, sitting = df['Assessment Event Date'].unique(), df['Programme of Study Code'].unique(),\
-        df['Centre No'].unique(), df['Assessment Event Sitting'].unique()
-    
+    df = df.drop(columns=["Max_Mark"])
+    kad, pos, centre, sitting = (
+        df["Assessment Event Date"].unique(),
+        df["Programme of Study Code"].unique(),
+        df["Centre No"].unique(),
+        df["Assessment Event Sitting"].unique(),
+    )
+
     kad, pos, centre, sitting = str(kad[0]), pos[0], centre[0], sitting[0]
 
-    df['Candidate No'] = df['Candidate No'].apply(lambda x: f"{x:>04}")
+    df["Candidate No"] = df["Candidate No"].apply(lambda x: f"{x:>04}")
     # Remove invalid filepath symbols
     file_kad = kad.replace("/", "")
     # Save df to CSV with filename using session details
-    df.to_csv(str(FILEPATH) + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
+    df.to_csv(
+        str(FILEPATH) + fr"\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv",
+        index=False,
+    )
 
 
 def main():
     choice = "y"
     while choice == "y":
-        system('cls')
+        system("cls")
         print("Marks file creation program")
         # Take session details from user
         pos = get_pos()
@@ -225,7 +267,7 @@ def main():
         sitting = get_sitting()
         centre = get_centre()
         # Slice df and add the provided details
-        pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == pos].copy()
+        pos_df = POS_CODES[POS_CODES["Programme of Study Code"] == pos].copy()
         pos_df = add_details_to_df(pos_df, kad, sitting, centre)
         candidate_df = get_qpvs_for_candidates(pos_df=pos_df)
         save_df_to_csv(candidate_df)
