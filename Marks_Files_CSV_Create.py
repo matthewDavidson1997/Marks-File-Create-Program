@@ -17,6 +17,10 @@ HEADER = ['Purchase Order Number', 'Item Number', 'Centre No', 'Centre No (SAP)'
           'Assessment Event Date', 'Assessment Event Sitting', 'Module Question Paper Version', 'Candidate Status',
           'Measure Def Code', 'Measure Def Desc', 'Measure Def Level', 'Candidate Mark', 'Examiner Id (UCLES ID)', 'Delivery Method']
 
+REGEX_PATTERNS = {"Centre": [re.compile(r"^[\d]{5}$"), re.compile(r"^[A-Z]{2}[\d]{3}$")],
+                  "QPV": [re.compile(r"^[\d]*$")],
+                  "Mark Scheme": [re.compile(r"^[1-4]$")],
+                  "Candidates": [re.compile(r"^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")]}
 
 def get_pos() -> str:
     """Function to take and validate POS input
@@ -68,10 +72,9 @@ def get_centre() -> str:
     Returns:
         str: validated centre
     """
-    valid_patts = [re.compile(r"^[\d]{5}$"), re.compile(r"^[A-Z]{2}[\d]{3}$")]
     match_question = "Enter centre number: "
     error_message = "Invalid centre, please try again"
-    return validate_match(regex_pattern=valid_patts, match_question=match_question, error_message=error_message)
+    return validate_match(regex_pattern=REGEX_PATTERNS['Centre'], match_question=match_question, error_message=error_message)
 
 
 def get_candidates():
@@ -92,10 +95,9 @@ def get_candidates():
 
 
 def validate_match(regex_pattern: List[re.Pattern], match_question: str, error_message: str):
-    patts = regex_pattern
     while True:
         user_input = input(match_question).upper()
-        if not any([patt.match(user_input) for patt in patts]):
+        if not any([patt.match(user_input) for patt in regex_pattern]):
             print(error_message)
             continue
         return user_input
@@ -120,28 +122,36 @@ def add_details_to_df(df: pd.DataFrame, kad, sitting, centre) -> pd.DataFrame:
     return df
 
 
-def mark_scheme():
-    option_patt = re.compile("^[1-4]$")
+def mark_scheme() -> int:
+    valid_patts = [re.compile("^[1-4]$")]
+    match_question = "Choose an option from the following list:\n\
+        1: Use full marks for all candidates\n\
+        2: Use random marks for all candidates\n\
+        3: Use specific marks for each module but shared by candidates\n\
+        4: Choose individual marks for each candidate and module\n"
+    error_message = "Invalid option entered, please try again"
+    return int(validate_match(regex_pattern=valid_patts, match_question=match_question, error_message=error_message))
+
+
+def validate_mark(max_mark: int, input_question: str):
+    mark_columns = {'Present': 'Candidate Mark',
+                    'Absent': 'Candidate Status'}
     while True:
-        choice = input("Choose an option from the following list:\n\
-            1: Use full marks for all candidates\n\
-            2: Use random marks for all candidates\n\
-            3: Use specific marks for each module but shared by candidates\n\
-            4: Choose individual marks for each candidate and module\n")
-        match = option_patt.match(choice)
-        if not match:
-            print("Invalid option entered, please try again")
-            continue
-        return int(choice)
-
-
-def validate_mark(mark: str, max_mark: int) -> bool:
-    if not mark:
-        return True
-    elif mark.isnumeric() and int(mark) <= max_mark and int(mark) >= 0:
-        return True
-    else:
-        return False
+        mark = input(input_question).upper()
+        if mark == "A":
+            return mark, mark_columns['Absent']
+        elif mark.isnumeric():
+            if int(mark) <= max_mark and int(mark) >= 0:
+                return mark, mark_columns['Present']
+            else:
+                print("Mark given is outside valid range, please try again")
+        else:
+            try:
+                float(mark)
+                if float(mark) <= max_mark and float(mark) >= 0:
+                    return mark, mark_columns['Present']
+            except ValueError:
+                print("Mark given is outside valid range, please try again")
 
 
 def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
@@ -149,7 +159,7 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
 
     Args:
         df (pd.DataFrame): _description_
-        option (Literal[1, 2, 3, 4]): _description_
+        option (int): _description_
 
     Returns:
         pd.DataFrame: _description_
@@ -162,33 +172,21 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
         # Enter a random mark for each row within range of max mark
         df['Candidate Mark'] = df['Max_Mark'].apply(lambda x: randint(0, x))
     elif option == 3:
-        # Get each distinct module code
-        print(df['Module Code'].unique())
+        # Loop distinct module codes to assign a mark to all rows matching that module
         for module in df['Module Code'].unique():
             # Get the maximum possible mark for that module
             max_mark = df[df['Module Code'] == module]['Max_Mark'].to_list()[0]
-            while True:
-                # Get user to enter mark for module
-                mark = input(f"Enter mark for {module} (max: {max_mark}): ")
-                valid_mark = validate_mark(mark, max_mark)
-                if not valid_mark:
-                    print("Mark given is outside valid range, please try again")
-                    continue
-                # Put entered mark into each row
-                df.loc[df['Module Code'] == module, 'Candidate Mark'] = mark
+            input_question = f"Enter mark for {module} (max: {max_mark}): "
+            mark, mark_column = validate_mark(max_mark, input_question)
+            # Put entered mark into each row
+            df.loc[df['Module Code'] == module, mark_column] = mark
     elif option == 4:
         for idx, row in df.iterrows():
             # Get the maximum possible mark for that row
             max_mark = row['Max_Mark']
-            while True:
-                # Get mark from user input
-                mark = input(f"Enter mark for {row['Module Code']} {row['Measure Def Code']} {row['Candidate No']} (max: {max_mark}): ")
-                valid_mark = validate_mark(mark, max_mark)
-                if not valid_mark:
-                    print("Mark given is outside valid range, please try again")
-                    continue
-                df.loc[idx, 'Candidate Mark'] = mark
-                break
+            input_question = f"Enter mark for {row['Module Code']} {row['Measure Def Code']} {row['Candidate No']} (max: {max_mark}): "
+            mark, mark_column = validate_mark(max_mark, input_question)
+            df.loc[idx, mark_column] = mark
     return df
 
 
