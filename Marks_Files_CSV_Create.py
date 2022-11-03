@@ -233,7 +233,7 @@ def get_qpvs_for_candidates(pos_df: pd.DataFrame, candidate_df: pd.DataFrame) ->
 def save_df_to_csv(df: pd.DataFrame):
     # Drop Max Marks column for output csv
     df = df.drop(columns=['Max_Mark'])
-    kad, pos, centre, sitting = df['Assessment Event Date'].unique()[0], df['Programme of Study Code'].unique()[0],\
+    kad, pos, centre, sitting = str(df['Assessment Event Date'].unique()[0]), df['Programme of Study Code'].unique()[0],\
         df['Centre No'].unique()[0], df['Assessment Event Sitting'].unique()[0]
     df['Candidate No'] = df['Candidate No'].apply(lambda x: f"{x:>04}")
     # Remove invalid filepath symbols
