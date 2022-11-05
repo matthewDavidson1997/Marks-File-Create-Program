@@ -23,7 +23,7 @@ Creating manually is error-prone and time consuming.
 
 Some reference files have not been included in this repository. 
 
-Due to this, the program will fail unless a dummy file is used. This may be included in a future update.
+Due to this, the program will fail unless a dummy file is used, this may be included in a future update.
 
 ## Future Updates
 
