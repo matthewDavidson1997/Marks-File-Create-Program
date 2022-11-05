@@ -312,14 +312,6 @@ def save_df_to_csv(df: pd.DataFrame):
     df.to_csv(str(MARKSFOLDER) + f'\\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
 
 
-def input_choice() -> str:
-    return input(
-        "How would you like to enter data? \n\
-        1. Enter in format (POS) (KAD) (Sitting) (Centre)\n\
-        2. Enter separately\n"
-    )
-
-
 def main() -> None:
     # Repeat program while user wants to create more files
     choice = "Y"
