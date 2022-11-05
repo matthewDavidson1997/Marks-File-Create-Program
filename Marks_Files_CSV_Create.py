@@ -275,7 +275,7 @@ def enter_marks_for_each_module(df: pd.DataFrame) -> pd.DataFrame:
     # Get each distinct module code
     df["Module Code"].unique()
 
-    # Loop distinct module codes to assign a mark 
+    # Loop distinct module codes to assign a mark
     # to all rows matching that module
     for module in df['Module Code'].unique():
         # Get the maximum possible mark for that module
@@ -339,13 +339,13 @@ def get_qpvs_for_candidates(pos_df: pd.DataFrame, candidate_df: pd.DataFrame) ->
         # Get candidate numbers
         candidates = get_candidates()
         candidate_df = add_candidates_to_df(
-            candidates=candidates, 
-            df=pos_df, 
+            candidates=candidates,
+            df=pos_df,
             candidate_df=candidate_df)
 
         # Take QPV from user and add to dataframe
         candidate_df = get_qpvs(candidates, candidate_df)
-        
+
         # Ask user if they want to add more candidates
         choice = input("Would you like to add another candidate range? y/n: ").upper()
     return candidate_df
