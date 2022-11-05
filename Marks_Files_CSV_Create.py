@@ -6,7 +6,6 @@ import re
 from datetime import datetime
 from pathlib import Path
 from random import randint
-from typing import List, Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -40,15 +39,13 @@ HEADER = [
 ]
 
 REGEX_PATTERNS = {
-    "Centre": 
-        re.compile(r"^([\d]{5}|[A-Z]{2}[\d]{3})$")
-        ,
-    "QPV": 
-        re.compile(r"^[\d]*$")
-        ,
-    "Mark Scheme": 
+    "Centre":
+        re.compile(r"^([\d]{5}|[A-Z]{2}[\d]{3})$"),
+    "QPV":
+        re.compile(r"^[\d]*$"),
+    "Mark Scheme":
         re.compile(r"^[1-4]$"),
-    "Candidates": 
+    "Candidates":
         re.compile(r"^(?P<min_cand>[1-9][\d]*)[\s]+(?P<max_cand>[1-9][\d]*)$")
     }
 
@@ -234,9 +231,11 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
     if option == 1:
         # Set candidate mark as the maximum mark
         df["Candidate Mark"] = df["Max_Mark"]
+
     elif option == 2:
         # Enter a random mark for each row within range of max mark
         df["Candidate Mark"] = df["Max_Mark"].apply(lambda x: randint(0, x))
+
     elif option == 3:
         # Get each distinct module code
         print(df["Module Code"].unique())
@@ -248,11 +247,16 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
             mark, mark_column = validate_mark(max_mark, input_question)
             # Put entered mark into each row
             df.loc[df['Module Code'] == module, mark_column] = mark
+
     elif option == 4:
         for idx, row in df.iterrows():
             # Get the maximum possible mark for that row
             max_mark = row['Max_Mark']
-            input_question = f"Enter mark for {row['Module Code']} {row['Measure Def Code']} {row['Candidate No']} (max: {max_mark}): "
+            input_question = (
+                f"Enter mark for {row['Module Code']}\
+                {row['Measure Def Code']}\
+                {row['Candidate No']}\
+                (max: {max_mark}): ")
             mark, mark_column = validate_mark(max_mark, input_question)
             df.loc[idx, mark_column] = mark
 
@@ -290,17 +294,22 @@ def get_qpvs_for_candidates(pos_df: pd.DataFrame, candidate_df: pd.DataFrame) ->
 def save_df_to_csv(df: pd.DataFrame):
     # Drop Max Marks column for output csv
     df = df.drop(columns=['Max_Mark'])
+
+    # Get file name inputs from df
     kad, pos, centre, sitting = (str(
         df['Assessment Event Date'].unique()[0]),
         df['Programme of Study Code'].unique()[0],
         df['Centre No'].unique()[0],
         df['Assessment Event Sitting'].unique()[0])
 
+    # Convert int style candidate number to 0000 format
     df['Candidate No'] = df['Candidate No'].apply(lambda x: f"{x:>04}")
+
     # Remove invalid filepath symbols
     file_kad = kad.replace("/", "")
+
     # Save df to CSV with filename using session details
-    df.to_csv(str(MARKSFOLDER) + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
+    df.to_csv(str(MARKSFOLDER) + f'\\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
 
 
 def input_choice() -> str:
@@ -312,8 +321,9 @@ def input_choice() -> str:
 
 
 def main() -> None:
-    choice = "y"
-    while choice == "y":
+    # Repeat program while user wants to create more files
+    choice = "Y"
+    while choice == "Y":
 
         os.system("cls" if os.name == "nt" else "clear")
 
@@ -321,7 +331,7 @@ def main() -> None:
         candidate_df = pd.DataFrame(columns=HEADER)
 
         print("Marks file creation program")
-        
+
         # Slice df and add the provided details
         pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == get_pos()].copy()
         pos_df = add_details_to_df(pos_df)
@@ -333,7 +343,9 @@ def main() -> None:
         # Add marks to each candidate
         candidate_df = assign_marks(candidate_df, marking_choice)
         save_df_to_csv(candidate_df)
-        choice = input("Generate another marks file? y/n:")
+
+        # Keep repeating until no
+        choice = input("Generate another marks file? y/n:").upper()
 
 
 if __name__ == "__main__":
