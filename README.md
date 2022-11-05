@@ -2,6 +2,11 @@
 
 ## Development
 
+# Prerequisites
+
+- conda installation
+- conda install mamba
+
 ```shell
 git clone git@github.com:matthewDavidson1997/Marks-File-Create-Program.git
 cd Marks-File-Create-Program
