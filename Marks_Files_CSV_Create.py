@@ -146,7 +146,6 @@ def get_centre() -> str:
     return validate_match(key='Centre')
 
 
-
 def get_candidates() -> range:
     patt = REGEX_PATTERNS["Candidates"]
     while True:
@@ -198,7 +197,6 @@ def add_details_to_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def mark_scheme() -> int:
     return int(validate_match(key='Mark Scheme'))
-
 
 
 def validate_mark(max_mark: int, input_question: str):
