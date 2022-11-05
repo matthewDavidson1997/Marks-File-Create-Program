@@ -2,7 +2,7 @@
 
 ## Development
 
-# Prerequisites
+### Prerequisites
 
 - conda installation
 - conda install mamba
