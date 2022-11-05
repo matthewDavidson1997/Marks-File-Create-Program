@@ -8,9 +8,9 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-
-Path('\Marks Files').cwd().mkdir(parents=True, exist_ok=True)
-MARKSFOLDER = (str(Path().cwd()) + '\Marks Files')
+PATH = str(Path().cwd())
+Path(PATH + '\Marks Files').cwd().mkdir(parents=True, exist_ok=True)
+MARKSFOLDER = (PATH + '\Marks Files')
 POS_CODES = pd.read_csv('.\POS_Codes.csv')
 
 HEADER = ['Purchase Order Number', 'Item Number', 'Centre No', 'Centre No (SAP)', 'Candidate No',

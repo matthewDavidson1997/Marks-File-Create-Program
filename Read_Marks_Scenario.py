@@ -3,8 +3,10 @@ import pandas as pd
 import glob
 import openpyxl
 
-Path('\Marks Files\Marks Scenarios').cwd().mkdir(parents=True, exist_ok=True)
-FOLDERPATH = (str(Path().cwd()) + '\Marks Files\Marks Scenarios')
+
+PATH = str(Path.cwd())
+Path(PATH + '\Marks Files\Marks Scenarios').mkdir(parents=True, exist_ok=True)
+FOLDERPATH = (PATH + '\Marks Files\Marks Scenarios')
 FILES = glob.glob(FOLDERPATH + '\*.xlsx')
 
 
