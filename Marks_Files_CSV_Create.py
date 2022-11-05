@@ -244,7 +244,7 @@ def save_df_to_csv(df: pd.DataFrame):
 
 
 def main():
-    
+
     choice = "y"
     while choice == "y":
         # Create empty dataframe which will become our output file
