@@ -16,7 +16,7 @@ Program to automate the generation of marks files.
 
 Creating manually is error-prone and time consuming.
 
-Due to possible sensitivity issues some reference files have not being included in this repository. 
+Some reference files have not being included in this repository. 
 
 Due to this, the program will fail unless a dummy file is used. This may be included in a future update.
 
