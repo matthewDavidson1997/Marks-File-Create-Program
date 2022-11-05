@@ -9,8 +9,9 @@ import numpy as np
 import pandas as pd
 
 
-FILEPATH = Path('Z:\Personal\Marks File Create Program\Marks_Files')
-POS_CODES = pd.read_csv('Z:\Personal\Marks File Create Program\POS_Codes.csv')
+Path('\Marks Files').cwd().mkdir(parents=True, exist_ok=True)
+MARKSFOLDER = (str(Path().cwd()) + '\Marks Files')
+POS_CODES = pd.read_csv('.\POS_Codes.csv')
 
 HEADER = ['Purchase Order Number', 'Item Number', 'Centre No', 'Centre No (SAP)', 'Candidate No',
           'Candidate No (SAP)', 'ATA Candidate Number', 'Programme of Study Code', 'Module Code', 'Module Booking GUID',
@@ -239,14 +240,15 @@ def save_df_to_csv(df: pd.DataFrame):
     # Remove invalid filepath symbols
     file_kad = kad.replace("/", "")
     # Save df to CSV with filename using session details
-    df.to_csv(str(FILEPATH) + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
+    df.to_csv(MARKSFOLDER + f'\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
 
 
 def main():
-    # Create empty dataframe which will become our output file
-    candidate_df = pd.DataFrame(columns=HEADER)
+    
     choice = "y"
     while choice == "y":
+        # Create empty dataframe which will become our output file
+        candidate_df = pd.DataFrame(columns=HEADER)
         system('cls')
         print("Marks file creation program")
         # Slice df and add the provided details
