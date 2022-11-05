@@ -247,19 +247,21 @@ def main():
 
     choice = "y"
     while choice == "y":
+        
         # Create empty dataframe which will become our output file
         candidate_df = pd.DataFrame(columns=HEADER)
         system('cls')
+
         print("Marks file creation program")
+
         # Slice df and add the provided details
         pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == get_pos()].copy()
-        print("I'm here 1")
         pos_df = add_details_to_df(pos_df)
-        print("I'm here 2")
         candidate_df = get_qpvs_for_candidates(pos_df=pos_df, candidate_df=candidate_df)
-        print("I'm here 3")
+
         # Ask how the user would like to add marks
         marking_choice = mark_scheme()
+
         # Add marks to each candidate
         candidate_df = assign_marks(candidate_df, marking_choice)
         save_df_to_csv(candidate_df)
