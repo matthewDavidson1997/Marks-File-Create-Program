@@ -3,9 +3,9 @@ import pandas as pd
 import glob
 import openpyxl
 
-
-FOLDERPATH = Path(r'Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios')
-FILES = glob.glob(r'Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios\*.xlsx')
+Path('\Marks Files\Marks Scenarios').cwd().mkdir(parents=True, exist_ok=True)
+FOLDERPATH = (str(Path().cwd()) + '\Marks Files\Marks Scenarios')
+FILES = glob.glob(FOLDERPATH + '\*.xlsx')
 
 
 def get_sheets(file):
