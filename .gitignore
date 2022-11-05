@@ -1,2 +1,4 @@
-Marks_Files/
 .vscode
+Marks Files/
+*.csv
+
