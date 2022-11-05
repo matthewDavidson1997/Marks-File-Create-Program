@@ -150,7 +150,7 @@ def get_centre() -> str:
 def get_candidates() -> range:
     patt = REGEX_PATTERNS["Candidates"]
     while True:
-        prompt, repeat = MESSAGE_DICT("Candidates")
+        prompt, repeat = MESSAGE_DICT["Candidates"]
         candidates = input(prompt).upper()
         candidates = candidates.strip()
         match = patt.match(candidates)
@@ -167,10 +167,11 @@ def get_candidates() -> range:
 
 def validate_match(key) -> str:
     regex_pattern = REGEX_PATTERNS[key]
+    prompt, repeat = MESSAGE_DICT[key]
     while True:
-        user_input, error_message = MESSAGE_DICT(key)
-        if not any([patt.match(user_input) for patt in regex_pattern]):
-            MESSAGE_DICT(key)
+        user_input = input(prompt).upper()
+        if not regex_pattern.match(user_input):
+            print(repeat)
             continue
         return user_input
 
@@ -262,7 +263,7 @@ def assign_marks(df: pd.DataFrame, option: int) -> pd.DataFrame:
 
 def add_candidates_to_df(
     candidates: range, df: pd.DataFrame, candidate_df: pd.DataFrame
-    ) -> pd.DataFrame:
+        ) -> pd.DataFrame:
     # For each candidate in the range of candidates given add candidate number
     # to a new column in dataframe
     for cand in candidates:
@@ -272,7 +273,6 @@ def add_candidates_to_df(
         candidate_df = pd.concat([candidate_df, temp_df], ignore_index=True)
     candidate_df["Max_Mark"] = candidate_df["Max_Mark"].astype(np.uint8)
     return candidate_df
-
 
 
 def get_qpvs_for_candidates(pos_df: pd.DataFrame, candidate_df: pd.DataFrame) -> pd.DataFrame:
@@ -311,8 +311,6 @@ def input_choice() -> str:
         1. Enter in format (POS) (KAD) (Sitting) (Centre)\n\
         2. Enter separately\n"
     )
-
-
 
 
 def main() -> None:
