@@ -6,8 +6,10 @@ import csv
 import re
 
 
-FOLDERPATH = Path(r'Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios')
-FILES = glob.glob(r'Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios\*.xlsx')
+PATH = str(Path.cwd())
+Path(PATH + '\Marks Files\Marks Scenarios').mkdir(parents=True, exist_ok=True)
+FOLDERPATH = (PATH + '\Marks Files\Marks Scenarios')
+FILES = glob.glob(FOLDERPATH + '\*.xlsx')
 
 
 def get_sheets(wb: openpyxl.Workbook):
@@ -20,7 +22,7 @@ def get_sheets(wb: openpyxl.Workbook):
 
 def delete_columns(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_drop = []
-    cols_to_keep = ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'MAX', 'MINA', 'MAXB', 
+    cols_to_keep = ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'MAX', 'MINA', 'MAXB',
                     'MINB', 'MAXC', 'MINC', 'MAXB2', 'MINB2', 'COMPNR', 'ALLNR']
     for cols in df:
         if cols not in cols_to_keep:
@@ -56,7 +58,6 @@ def main():
                 df.to_csv(str(FOLDERPATH) + f'\CSVs\{pos.group(0)} {sheet} {new_filename}', index=False)
         except TypeError:
             print("TypeError")
-        
 
 
 if __name__ == "__main__":
