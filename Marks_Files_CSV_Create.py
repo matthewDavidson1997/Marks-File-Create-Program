@@ -191,6 +191,15 @@ def validate_match(key) -> str:
 
 def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    exemptions_choice = input("Are there any exempt modules? (y/n): ").upper()
+    if exemptions_choice == "Y":
+        exempt_modules = []
+        for module in df['Module Code'].unique():
+            print(f"{[module]}. {module}")
+            module_choice = input("Exempt module? (y/n): ").upper()
+            if module_choice == "Y":
+                exempt_modules.append(module)
+        df = df[~df['Module Code'].isin(exempt_modules)].copy()
     # Get each unique module code from df
     for module in df['Module Code'].unique():
         # Get QPV for each unique module
