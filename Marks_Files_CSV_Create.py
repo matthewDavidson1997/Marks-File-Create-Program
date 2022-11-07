@@ -130,6 +130,16 @@ def validate_match(regex_pattern: List[re.Pattern], key):
 
 def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    exemptions_choice = input("Are there any exempt modules? (y/n): ").upper()
+    if exemptions_choice == "Y":
+        exempt_modules = []
+        for module in df['Module Code'].unique():
+            print(f"{[module]}. {module}")
+            module_choice = input("Exempt module? (y/n): ").upper()
+            if module_choice == "Y":
+                exempt_modules.append(module)
+        df = df[~df['Module Code'].isin(exempt_modules)].copy()
+        exempt_modules = []
     for module in df['Module Code'].unique():
         print(f"{module} : ")
         qpv = validate_match(regex_pattern=REGEX_PATTERNS['QPV'], key='QPV')
@@ -243,19 +253,17 @@ def save_df_to_csv(df: pd.DataFrame):
 
 
 def main():
-    # Create empty dataframe which will become our output file
-    candidate_df = pd.DataFrame(columns=HEADER)
+
     choice = "y"
     while choice == "y":
+        # Create empty dataframe which will become our output file
+        candidate_df = pd.DataFrame(columns=HEADER)
         system('cls')
         print("Marks file creation program")
         # Slice df and add the provided details
         pos_df = POS_CODES[POS_CODES['Programme of Study Code'] == get_pos()].copy()
-        print("I'm here 1")
         pos_df = add_details_to_df(pos_df)
-        print("I'm here 2")
         candidate_df = get_qpvs_for_candidates(pos_df=pos_df, candidate_df=candidate_df)
-        print("I'm here 3")
         # Ask how the user would like to add marks
         marking_choice = mark_scheme()
         # Add marks to each candidate

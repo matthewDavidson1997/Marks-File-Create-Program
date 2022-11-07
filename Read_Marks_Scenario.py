@@ -2,14 +2,15 @@ from pathlib import Path
 import pandas as pd
 import glob
 import openpyxl
+import csv
+import re
 
 
 FOLDERPATH = Path(r'Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios')
 FILES = glob.glob(r'Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios\*.xlsx')
 
 
-def get_sheets(file):
-    wb = openpyxl.load_workbook(file, data_only=True)
+def get_sheets(wb: openpyxl.Workbook):
     sheets = []
     for sheet in wb.sheetnames:
         if sheet != 'Notes':
@@ -42,17 +43,17 @@ def main():
     files = FILES
     for file in files:
         try:
-            sheets = get_sheets(file)
+            wb = openpyxl.load_workbook(file, data_only=True)
+            sheets = get_sheets(wb)
             print(sheets)
             new_filename = file.replace('Z:\Personal\Marks File Create Program\Marks_Files\Marks_Scenarios\\', '')
             new_filename = new_filename.replace('.xlsx', '.csv')
+            pos = re.search(r"D[\d]{3}", new_filename)
+            print(pos)
             print(new_filename)
             for sheet in sheets:
                 df = pd.read_excel(file, sheet_name=sheet)
-                df = delete_columns(df)
-                df = delete_rows(df)
-                print(df)
-                df.to_csv(str(FOLDERPATH) + f'\\new {sheet} {new_filename}', index=False)
+                df.to_csv(str(FOLDERPATH) + f'\CSVs\{pos.group(0)} {sheet} {new_filename}', index=False)
         except TypeError:
             print("TypeError")
         
