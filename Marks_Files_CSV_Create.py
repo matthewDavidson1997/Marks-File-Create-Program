@@ -6,6 +6,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from random import randint
+import xml
 
 import numpy as np
 import pandas as pd
@@ -191,6 +192,7 @@ def validate_match(key) -> str:
 
 def get_qpvs(candidates: range, df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    print(df)
     exemptions_choice = input("Are there any exempt modules? (y/n): ").upper()
     if exemptions_choice == "Y":
         exempt_modules = []
@@ -380,6 +382,68 @@ def save_df_to_csv(df: pd.DataFrame):
     # Save df to CSV with filename using session details
     df.to_csv(str(MARKSFOLDER) + f'\\marksfile_{pos}_{centre}_{file_kad}{sitting}.csv', index=False)
 
+
+"""def save_df_to_xml(df: pd.DataFrame):
+    df = df.copy()
+
+    # Get file name inputs from df
+    kad, centre, sitting, delivery_method = (str(
+        df['Assessment Event Date'].unique()[0]),
+        df['Centre No'].unique()[0],
+        df['Assessment Event Sitting'].unique()[0],
+        df['Delivery Method'].unique()[0])
+
+    measure_def_codes = df['Measure Def Code']
+    df['Candidate No'] = df['Candidate No'].apply(lambda x: f"{x:>04}")
+    candidate_nos = df['Candidate No'].unique()
+    module_codes = df['Module Code'].unique()
+    kad_changed_format = kad.replace("/", ".")
+    output_text = []
+    namespace_text = {
+        "Start": 
+        "<ns0:msgSubmitMarksRequest xmlns:ns0=\"urn:com.CA:erpf:edi:ChinaNEEA\">",
+        "End": 
+        "</ns0:msgSubmitMarksRequest>"
+        }
+    output_text.append(namespace_text["Start"])
+    for cand in candidate_nos:
+        for module_code in module_codes:
+            qpv = df.loc[
+                (df["Module Code"] == module_code) & (df["Candidate No"] == cand),
+                "Module Question Paper Version"]
+            text_for_each_module = (
+                f"<candidateEntry>\
+                    <centre>\
+                        <centreNumber>{centre}</centreNumber>\
+                    </centre>\
+                    <centreCandidateNumber>{cand}</centreCandidateNumber>\
+                    <achievable>\
+                        <referenceId>{module_code}</referenceId>\
+                    </achievable>\
+                    <assessmentEvent>\
+                        <assessmentDate>{kad_changed_format}</assessmentDate>\
+                        <sittingTimePeriod>{sitting}</sittingTimePeriod>\
+                        <deliveryMethod>{delivery_method}</deliveryMethod>\
+                    </assessmentEvent>\
+                    <testInstance>\
+                        <qpReferenceId>{qpv}</qpReferenceId>\
+                    </testInstance>\
+                    </candidateEntry>\
+                    <measureAvailabilityStatus />"
+                )
+            output_text.append(text_for_each_module)
+            for measure_def_code in measure_def_codes:
+                mark = df.loc[(df['Candidate No'] == cand) & (df["Measure Def Code"] == measure_def_code), "Candidate Mark"]
+                text_for_each_measure_def = (
+                    f"<measure><measureDef><referenceCode>\
+                    {measure_def_code}\
+                    </referenceCode></measureDef>\
+                    <measureValue>{mark}</measureValue></measure>"
+                    )
+                output_text.append(text_for_each_measure_def)
+    output_text.append(namespace_text["End"])
+    print(output_text[0])
+"""
 
 def main() -> None:
     # Repeat program while user wants to create more files
